@@ -5,38 +5,46 @@ Item example:
   done: false
 }
 */
-let ITEMS = [];
-let ID_COUNTER = 1;
 
-function getAll(callback) {
-  callback(ITEMS);
-}
-
+const TodoModel = require("./models/todo")
 function add(name, callback) {
-  const newItem = {
-    id: (ID_COUNTER++).toString(),
-    name,
-    done: false
-  };
-  ITEMS.push(newItem);
-  callback(newItem);
-}
-
-function remove(id, callback) {
-  ITEMS = ITEMS.filter(v => v.id !== id);
-  callback();
-}
-
-function setDone(id, callback) {
-  ITEMS = ITEMS.map(v => {
-    if (v.id === id) {
-      v.done = true;
-    }
-    return v;
+  const newItem = new TodoModel({
+    name
   });
-  callback();
+  newItem.save((error, result) => {
+    callback(result);
+  })
 }
-
+function getAll(callback){
+  TodoModel.find({}, (error, result)=>{
+    if(error){
+      console.log(error);
+      callback([]);
+    }
+    else {
+      callback(result);
+    }
+  })
+}
+function setDone(id, callback){
+  TodoModel.findOne({_id: id}, (error, result)=>{
+    if(result.done===true){
+      TodoModel.updateOne({_id:id}, {done:false}, ()=>{
+        callback();
+      });
+    }
+    else{
+      TodoModel.updateOne({_id:id}, {done:true}, ()=>{
+        callback();
+      });
+    }
+  })
+}
+function remove(id, callback){
+  TodoModel.deleteOne({_id:id}, (error)=>{
+    callback();
+  });
+}
 module.exports = {
   getAll,
   add,

@@ -17,11 +17,21 @@ const Counter = () => {
   }, []);
 
   const onDeleteClick = (item) => {
-
+    axios.delete(`api/todo/${item._id}`)
+    .then(()=>axios.get(`api/todo`))
+    .catch((err)=>{
+      if(err.response.code === 403){
+        alert("로그인을 해주세요")
+      } else alert(`오류! ${err}`);
+    })
+    .then(response => {
+      setItems(response.data);
+    })
   };
+
   const onFinishClick = (item) => {
     // 완료 처리 요청 전송
-    axios.put(`/api/todo/${item.id}/finish`)
+    axios.put(`/api/todo/${item._id}/finish`)
     // 완료 후 목록 조회 요청 전송
     .then(() => axios.get(`/api/todo`))
     // 응답이 돌아오면 응답 내용으로 목록을 변경
